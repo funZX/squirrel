@@ -2,8 +2,8 @@
 #include <librg.h>
 #include <squirrel.h>
 #include <squirrel.h>
-#include "sqrdbg.h"
-#include "sqdbgserver.h"
+#include <sqrdbg.h>
+#include <sqdbgserver.h>
 SQInteger debug_hook(HSQUIRRELVM v);
 SQInteger error_handler(HSQUIRRELVM v);
 

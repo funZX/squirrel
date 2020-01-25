@@ -2,8 +2,8 @@
 #include <assert.h>
 #include <algorithm>
 #include <sqstdblob.h>
-#include "sqrdbg.h"
-#include "sqdbgserver.h"
+#include <sqrdbg.h>
+#include <sqdbgserver.h>
 
 
 #ifndef _UNICODE
