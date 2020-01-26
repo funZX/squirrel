@@ -40,9 +40,9 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 
 void sq_rdbg_term(HSQREMOTEDBG rdbg)
 {
-	if (rdbg->_accept != INVALID_SOCKET)
+	if (rdbg->_accept != ENET_SOCKET_NULL)
         enet_socket_destroy(rdbg->_accept);
-	if (rdbg->_endpoint != INVALID_SOCKET)
+	if (rdbg->_endpoint != ENET_SOCKET_NULL)
         enet_socket_destroy(rdbg->_endpoint);
 
 	rdbg->_terminate = true;
@@ -66,7 +66,7 @@ SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG rdbg)
     enet_socket_destroy(rdbg->_accept);
 	
     rdbg->_accept = -1;
-	if(rdbg->_endpoint==INVALID_SOCKET){
+	if(rdbg->_endpoint == ENET_SOCKET_NULL){
 		return sq_throwerror(rdbg->_v,_SC("error accept(socket)"));
 	}
 	while(!rdbg->_ready){
@@ -77,7 +77,7 @@ SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG rdbg)
 
 SQRESULT sq_rdbg_update(HSQREMOTEDBG rdbg)
 {
-	TIMEVAL time;
+    timeval time;
 	time.tv_sec=0;
 	time.tv_usec=0;
 	fd_set read_flags;
@@ -106,7 +106,7 @@ SQRESULT sq_rdbg_update(HSQREMOTEDBG rdbg)
 
 		case 0:
 			return sq_throwerror(rdbg->_v,_SC("disconnected"));
-		case SOCKET_ERROR:
+		case -1:
 			return sq_throwerror(rdbg->_v,_SC("socket error"));
         }
 		

@@ -60,6 +60,7 @@ typedef wchar_t SQChar;
 
 
 #define scstrcmp    wcscmp
+#define scstrcpy    wcscpy
 #ifdef _WIN32
 #define scsprintf   _snwprintf
 #else
@@ -105,6 +106,7 @@ typedef wchar_t SQChar;
 typedef char SQChar;
 #define _SC(a) a
 #define scstrcmp    strcmp
+#define scstrcpy    strcpy
 #ifdef _MSC_VER
 #define scsprintf   _snprintf
 #else

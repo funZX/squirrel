@@ -6,12 +6,6 @@
 #include <sqdbgserver.h>
 
 
-#ifndef _UNICODE
-#define scstrcpy strcpy
-#else
-#define scstrcpy wcscpy
-#endif
-
 struct XMLEscape{
 	const SQChar c;
 	const SQChar *esc;
@@ -177,7 +171,7 @@ void SQDbgServer::SendChunk(const SQChar *chunk)
 {
 	char *buf=NULL;
 	int buf_len=0;
-#ifdef _UNICODE
+#ifdef SQUNICODE
 	buf_len=(int)scstrlen(chunk)+1;
 	buf=(char *)sq_getscratchpad(_v,(buf_len)*3);
 	//wcstombs((char *)buf,chunk,buf_len*3);
@@ -407,7 +401,7 @@ bool SQDbgServer::ParseBreakpoint(const char *msg,BreakPoint &out)
 	*dest='\0';
 	*dest++;
 	*dest='\0';
-#ifdef _UNICODE
+#ifdef SQUNICODE
 	int len=(int)strlen(stemp);
 	SQChar *p = desttemp;
 	size_t destlen = mbstowcs(p,stemp,len);
@@ -641,7 +635,7 @@ void SQDbgServer::EndDocument()
 //this can be done much better/faster(do we need that?)
 const SQChar *SQDbgServer::escape_xml(const SQChar *s)
 {
-	SQChar *temp=sq_getscratchpad(_v,((SQInteger)scstrlen(s)*6) + sizeof SQChar);
+	SQChar *temp=sq_getscratchpad(_v,((SQInteger)scstrlen(s)*6) + sizeof(SQChar));
 	SQChar *dest=temp;
 	while(*s!=_SC('\0')){
 		
