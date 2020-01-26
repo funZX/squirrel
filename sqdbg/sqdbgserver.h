@@ -123,8 +123,10 @@ public:
 	HSQUIRRELVM _v;
 	HSQOBJECT _debugroot;
 	eDbgState _state;
-	SOCKET _accept;
-	SOCKET _endpoint;
+    
+    ENetSocket _accept;
+    ENetSocket _endpoint;
+
 	BreakPointSet _breakpoints;
 	WatchSet _watches;
 	//int _recursionlevel; 
@@ -141,11 +143,5 @@ public:
 	SQDBGString _break_type;
 	VMStateMap _vmstate;	
 };
-
-#ifdef _WIN32
-#define sqdbg_closesocket(x) closesocket((x))
-#else
-#define sqdbg_closesocket(x) close((x))
-#endif
 
 #endif //_SQ_DBGSERVER_H_ 

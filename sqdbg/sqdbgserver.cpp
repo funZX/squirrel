@@ -11,6 +11,7 @@
 #else
 #define scstrcpy wcscpy
 #endif
+
 struct XMLEscape{
 	const SQChar c;
 	const SQChar *esc;
@@ -85,8 +86,8 @@ SQDbgServer::SQDbgServer(HSQUIRRELVM v)
 	_autoupdate = false;
 	_v = v;
 	_state = eDBG_Running;
-	_accept = INVALID_SOCKET;
-	_endpoint = INVALID_SOCKET;
+	_accept = ENET_SOCKET_NULL;
+	_endpoint = ENET_SOCKET_NULL;
 	//_maxrecursion = 10;
 	sq_resetobject(&_debugroot);
 }
@@ -166,8 +167,8 @@ bool SQDbgServer::ReadMsg()
 
 void SQDbgServer::BusyWait()
 {
-	while( !ReadMsg() )
-		Sleep(0);
+    while (!ReadMsg())
+        zpl_sleep_ms(0);
 }
 
 
@@ -193,7 +194,8 @@ void SQDbgServer::Terminated()
 {
 	BeginElement(_SC("terminated"));
 	EndElement(_SC("terminated"));
-	::Sleep(200);
+
+    zpl_sleep_ms(200);
 }
 
 VMState *SQDbgServer::GetVMState(HSQUIRRELVM v)
@@ -448,7 +450,8 @@ void SQDbgServer::BreakExecution()
 	while(_state==eDBG_Suspended){
 		if(SQ_FAILED(sq_rdbg_update(this)))
 			exit(0);
-		Sleep(10);
+
+        zpl_sleep_ms(10);
 	}
 }
 

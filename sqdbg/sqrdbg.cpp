@@ -11,21 +11,20 @@ SQInteger error_handler(HSQUIRRELVM v);
 
 HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 {
-	WSADATA wsadata;
+    enet_initialize();
+
 	sockaddr_in bindaddr;
-#ifdef _WIN32
-	if (WSAStartup (MAKEWORD(2,2), &wsadata) != 0){
-		return NULL;  
-	}	
-#endif 
+
 	SQDbgServer *rdbg = new SQDbgServer(v);
 	rdbg->_v = v;
 	rdbg->_autoupdate = autoupdate?true:false;
-	rdbg->_accept = socket(AF_INET,SOCK_STREAM,0);
-	bindaddr.sin_family = AF_INET;
-	bindaddr.sin_port = htons(port);
-	bindaddr.sin_addr.s_addr = htonl (INADDR_ANY);
-	if(bind(rdbg->_accept,(sockaddr*)&bindaddr,sizeof(bindaddr))==SOCKET_ERROR){
+    rdbg->_accept = enet_socket_create(ENET_SOCKET_TYPE_STREAM);
+
+    ENetAddress address;
+    address.host = IN6ADDR_ANY_INIT;
+    address.port = htons(port);
+
+	if (-1 == enet_socket_bind(rdbg->_accept, &address)){
 		delete rdbg;
 		sq_throwerror(v,_SC("failed to bind the socket"));
 		return NULL;
@@ -42,9 +41,9 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 void sq_rdbg_term(HSQREMOTEDBG rdbg)
 {
 	if (rdbg->_accept != INVALID_SOCKET)
-		sqdbg_closesocket(rdbg->_accept);
+        enet_socket_destroy(rdbg->_accept);
 	if (rdbg->_endpoint != INVALID_SOCKET)
-		sqdbg_closesocket(rdbg->_endpoint);
+        enet_socket_destroy(rdbg->_endpoint);
 
 	rdbg->_terminate = true;
 }
@@ -58,14 +57,15 @@ SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG rdbg)
 	sq_addref(rdbg->_v,&rdbg->_serializefunc);
 	sq_pop(rdbg->_v,1);
 
-	sockaddr_in cliaddr;
-	int addrlen=sizeof(cliaddr);
-	if(listen(rdbg->_accept,0)==SOCKET_ERROR)
+	if(-1 == enet_socket_listen(rdbg->_accept, 0))
 		return sq_throwerror(rdbg->_v,_SC("error on listen(socket)"));
-	rdbg->_endpoint = accept(rdbg->_accept,(sockaddr*)&cliaddr,&addrlen);
-	//do not accept any other connection
-	sqdbg_closesocket(rdbg->_accept);
-	rdbg->_accept = INVALID_SOCKET;
+	
+    ENetAddress address;
+    enet_socket_accept(rdbg->_accept, &address);
+    //do not accept any other connection
+    enet_socket_destroy(rdbg->_accept);
+	
+    rdbg->_accept = -1;
 	if(rdbg->_endpoint==INVALID_SOCKET){
 		return sq_throwerror(rdbg->_v,_SC("error accept(socket)"));
 	}
@@ -172,8 +172,7 @@ SQRESULT sq_rdbg_shutdown(HSQREMOTEDBG rdbg)
 {
 	delete rdbg;
 
-#ifdef _WIN32
-	WSACleanup();
-#endif
+    enet_deinitialize();
+
 	return SQ_OK;
 }
