@@ -23,6 +23,7 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
     ENetAddress address;
     address.host = IN6ADDR_ANY_INIT;
     address.port = htons(port);
+    address.sin6_scope_id = htons(0);
 
 	if (-1 == enet_socket_bind(rdbg->_accept, &address)){
 		delete rdbg;
