@@ -36,6 +36,14 @@ HSQREMOTEDBG sq_rdbg_init(HSQUIRRELVM v,unsigned short port,SQBool autoupdate)
 		return NULL;
 	}
 	
+    if (SQ_FAILED(sq_compilebuffer(rdbg->_v, serialize_state_nut, (SQInteger)scstrlen(serialize_state_nut), _SC("SERIALIZE_STATE"), SQFalse))) {
+        sq_throwerror(rdbg->_v, _SC("error compiling the serialization function"));
+    }
+
+    sq_getstackobj(rdbg->_v, -1, &rdbg->_serializefunc);
+    sq_addref(rdbg->_v, &rdbg->_serializefunc);
+    sq_pop(rdbg->_v, 1);
+
     return rdbg;
 }
 
@@ -51,13 +59,6 @@ void sq_rdbg_term(HSQREMOTEDBG rdbg)
 
 SQRESULT sq_rdbg_waitforconnections(HSQREMOTEDBG rdbg)
 {
-	if(SQ_FAILED(sq_compilebuffer(rdbg->_v,serialize_state_nut,(SQInteger)scstrlen(serialize_state_nut),_SC("SERIALIZE_STATE"),SQFalse))) {
-		sq_throwerror(rdbg->_v,_SC("error compiling the serialization function"));
-	}
-	sq_getstackobj(rdbg->_v,-1,&rdbg->_serializefunc);
-	sq_addref(rdbg->_v,&rdbg->_serializefunc);
-	sq_pop(rdbg->_v,1);
-
 	if(-1 == enet_socket_listen(rdbg->_accept, 0))
 		return sq_throwerror(rdbg->_v,_SC("error on listen(socket)"));
 	
